@@ -1,7 +1,7 @@
 const reviewModel = require("../models/reviewModel")
 const bookModel = require("../models/bookModel")
 
-const {  isValidObjectId, isValidName, isValidRating, isValidString } = require("../middleware/validation");
+const { isValidObjectId, isValidName, isValidRating, isValidString } = require("../middleware/validation");
 
 //====================================================[Create Review Api]========================================================================
 
@@ -46,12 +46,12 @@ const createReview = async function (req, res) {
         }
 
         //************************************* DB CALL FOR CREATING *************************************************/
-        
+
         data.reviewedAt = new Date()
         let saveReview = await reviewModel.create(data)
         // increase the reviews count in same book
         if (saveReview) await bookModel.findOneAndUpdate({ _id: Id }, { $inc: { reviews: +1 } })
-        let getBookData = await bookModel .findOne({_id:saveReview.bookId,isDeleted:false})
+        let getBookData = await bookModel.findOne({ _id: saveReview.bookId, isDeleted: false })
         let response = await reviewModel.findOne({ _id: saveReview._id })
 
         let reviewObj = getBookData.toObject()
@@ -103,13 +103,13 @@ const updatedReview = async function (req, res) {
 
         //************************************* VALIDATING *************************************************/
 
-        if(review){
+        if (review) {
             if (!isValidString(review)) {
                 return res.status(400).send({ status: false, message: "Review is missing ! " })
             }
         }
 
-        if(rating){
+        if (rating) {
             if (!isValidRating(rating)) {
                 return res.status(400).send({ status: false, message: 'Rating must be 1,2,3,4 or 5 not a character' })
             }
@@ -117,8 +117,8 @@ const updatedReview = async function (req, res) {
                 return res.status(400).send({ status: false, message: "Rating should be in range of number 1 to 5" })
             }
         }
- 
-        if(reviewedBy){
+
+        if (reviewedBy) {
             if (!isValidName(reviewedBy)) {
                 return res.status(400).send({ status: false, message: "please enter valid name in reviewedBy : eg- John Doe" });
             }
@@ -130,10 +130,11 @@ const updatedReview = async function (req, res) {
         //************************************* DB CALL FOR UPDATING ****************************************/
 
 
-        let updatedReview = await reviewModel.findOneAndUpdate({ _id: reviewId }, 
-            {   review: review, 
-                rating: rating, 
-                reviewedBy: reviewedBy 
+        let updatedReview = await reviewModel.findOneAndUpdate({ _id: reviewId },
+            {
+                review: review,
+                rating: rating,
+                reviewedBy: reviewedBy
             },
             { new: true })
 
@@ -179,10 +180,10 @@ const deleteReview = async function (req, res) {
         //************************************* DB CALL FOR UPDATING ****************************************/
 
         // set the isDeleted property of review to true 
-        let deletedReview = await reviewModel.findOneAndUpdate({ _id: reviewId, bookId: bookId }, { isDeleted: true }, { new: true })
+        await reviewModel.findOneAndUpdate({ _id: reviewId, bookId: bookId }, { isDeleted: true }, { new: true })
 
         // decrease the review count in the book
-        let decreaseCount = await bookModel.findOneAndUpdate({ _id: bookId, reviews: { $gt: 0 } }, { $inc: { reviews: -1 } })
+        await bookModel.findOneAndUpdate({ _id: bookId, reviews: { $gt: 0 } }, { $inc: { reviews: -1 } })
 
         return res.status(200).send({ status: true, message: 'Review Deleted Successfully' })
 

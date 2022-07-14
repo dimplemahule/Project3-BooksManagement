@@ -84,7 +84,7 @@ const getBooksData = async function (req, res) {
 
         if (Object.keys(data).length ==0) {
             getBooks = await bookModel.find({data, isDeleted: false }).select({ _id: 1, title: 1, excerpt: 1, userId: 1, category: 1, reviews: 1, releasedAt: 1, }).sort({ title: 1 })
-            return res.status(400).send({ status: true, message: 'Books list', data: getBooks })
+            return res.status(200).send({ status: true, message: 'Books list', data: getBooks })
         }
 
         if (data.userId) {
@@ -216,7 +216,7 @@ const updatedBook = async function (req, res) {
             res.status(200).send({ status: true, data: updatedBook })
         }
         else {
-            return res.status(400).send({ status: false, message: "Unable to update details. Book has been already deleted" })
+            return res.status(404).send({ status: false, message: "Unable to update details. Book has been already deleted" })
         }
 
 
