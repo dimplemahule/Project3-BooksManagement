@@ -1,9 +1,39 @@
 const bookModel = require("../models/bookModel")
 const userModel = require("../models/userModel")
 const reviewModel = require("../models/reviewModel");
+const aws = require("aws-sdk");
 const { isValid, isValidObjectId, isValidDate, isValidISBN, isValidString } = require("../middleware/validation");
 
 
+
+//================================================[Upload File Function -AWS]=======================================================================
+
+
+aws.config.update({
+    accessKeyId: "AKIAY3L35MCRVFM24Q7U",
+    secretAccessKey: "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",
+    region: "ap-south-1"
+})
+
+let uploadFile= async ( file) =>{
+   return new Promise( function(resolve, reject) {
+    let s3= new aws.S3({apiVersion: '2006-03-01'}); 
+
+    var uploadParams= {
+        ACL: "public-read",
+        Bucket: "classroom-training-bucket",  
+        Key: "abc/" + file.originalname,  
+        Body: file.buffer
+    }
+
+    s3.upload( uploadParams, function (err, data ){
+        if(err) {
+            return reject({"error": err})
+        }
+        return resolve(data.Location)
+    })
+})
+}
 //================================================[Create Book Api]=======================================================================
 
 
@@ -62,6 +92,15 @@ const createBook = async function (req, res) {
 
         let checkUserId = await userModel.findOne({ _id: userId })
         if (!checkUserId) return res.status(400).send({ status: false, message: "User Id do not exists" })
+//=======================================================================================
+
+        let files=req.files
+        if (!(files&&files.length)) {
+            return res.status(400).send({ status: false, message: " Please Provide The Profile Image" });}
+        const uploadedBookImage = await uploadFile(files[0])
+        data.bookImage=uploadedBookImage
+
+//=======================================================================================
 
         let savedData = await bookModel.create(data);
         res.status(201).send({ status: true, message: "Success", data: savedData });

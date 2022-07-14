@@ -28,6 +28,10 @@ const bookSchema = new mongoose.Schema({
         type: String,
         required: true, trim: true
     },
+    bookImage:{
+        type:String,
+        required:true
+    },
     subcategory: [{
         type: String,
         required: true, trim: true
@@ -48,6 +52,7 @@ const bookSchema = new mongoose.Schema({
         required: true,
 
     }
+
 }, { timestamps: true });
 module.exports = mongoose.model('bookModel', bookSchema)
 
